@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { DownloadButton } from './components/DownloadButton';
 import { MockUp } from './components/Mockup';
-import { FaGithub } from 'react-icons/fa';
+import { FaGithub, FaTimes } from 'react-icons/fa';
 
 function App() {
   const [input, setInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsUploading(true);
@@ -27,22 +28,39 @@ function App() {
       };
     } catch (error) {
       // handle error
+      setError((error as Error)?.message ?? '');
       setIsUploading(false);
+
+      setTimeout(() => {
+        setError('');
+      }, 3000);
     }
   };
 
   return (
     <div className="p-6 flex flex-col gap-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-white font-bold">FreeMockUp</h2>
-        <div className="flex gap-4 items-center">
-          <span className="text-2xl cursor-pointer text-white">
-            <FaGithub />
+      {/* Header here */}
+      <header className="flex justify-between items-center">
+        <h2 className="text-white font-bold cursor-pointer text-xl">
+          Free<span className="text-brand-500">Mock</span>
+          <span className="italic">Up</span>
+        </h2>
+        <div className="flex gap-8 items-center">
+          <span className="text-3xl cursor-pointer text-white">
+            <a
+              href="https://github.com/Sachin-chaurasiya/FreeMockUp"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <FaGithub />
+            </a>
           </span>
           <DownloadButton />
         </div>
-      </div>
-      <div className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8">
+      </header>
+
+      {/* Main here */}
+      <main className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8 mt-4">
         <div className="col-span-1 flex flex-col gap-4">
           <label className="text-white" htmlFor="website-url">
             Website URL{' '}
@@ -103,7 +121,37 @@ function App() {
         <div className="col-span-2">
           <MockUp imageUrl={imageUrl} input={input} />
         </div>
-      </div>
+      </main>
+
+      {/* Footer here */}
+      <footer>
+        <p className="text-white text-center flex gap-2 items-center justify-center">
+          <span>{new Date().getFullYear()} © FreeMockUp.</span>
+          Made with ❤️ by{' '}
+          <a
+            href="https://github.com/Sachin-chaurasiya"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-brand-500"
+          >
+            Sachin-chaurasiya
+          </a>
+        </p>
+      </footer>
+
+      {/* Toast messages here */}
+      {error && (
+        <div className="toast toast-top toast-end">
+          <div className="alert bg-red-500 text-white rounded-md px-2 py-3">
+            <span className="flex justify-between items-center gap-4">
+              <span>{error}</span>
+              <button className="cursor-pointer" onClick={() => setError('')}>
+                <FaTimes />
+              </button>
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
