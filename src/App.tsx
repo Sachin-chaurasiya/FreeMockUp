@@ -100,8 +100,7 @@ function App() {
                       />
                     </svg>
                     <p className="mb-2 text-sm text-[#1D232A]">
-                      <span className="font-semibold">Click to upload</span> or
-                      drag and drop
+                      <span className="font-semibold">Click to upload</span>
                     </p>
                     <p className="text-xs text-[#1D232A]">SVG, PNG or JPG.</p>
                   </>
