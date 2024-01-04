@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { DEFAULT_SCREEN } from '../constants';
 
 interface MockUpProps {
   imageUrl: string;
@@ -11,10 +12,7 @@ const MockUp: FC<MockUpProps> = ({ imageUrl, input }) => {
       <div className="mockup-browser-toolbar">
         <div className="input">{input || 'https://example.com'}</div>
       </div>
-      <img
-        src={imageUrl || '/placeholder-image.avif'}
-        alt="custom-mockup-screen"
-      />
+      <img src={imageUrl || DEFAULT_SCREEN} alt="custom-mockup-screen" />
     </div>
   );
 };
