@@ -4,6 +4,8 @@ import { MockUp } from './components/Mockup';
 import { FaGithub, FaTimes } from 'react-icons/fa';
 
 function App() {
+  const [showInput, setShowInput] = useState(true);
+  const [showBorder, setShowBorder] = useState(true);
   const [input, setInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -62,6 +64,30 @@ function App() {
       {/* Main here */}
       <main className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8 mt-4">
         <div className="col-span-1 flex flex-col gap-4">
+          <div className="flex justify-between">
+            <label htmlFor="toggle-view" className="text-white cursor-pointer">
+              ShowInput
+            </label>
+            <input
+              id="toggle-view"
+              type="checkbox"
+              className="toggle bg-brand-700 hover:bg-brand-500 border-brand-500 checked:bg-brand-500"
+              onChange={(e) => setShowInput(e.target.checked)}
+              checked={showInput}
+            />
+          </div>
+          <div className="flex justify-between">
+            <label htmlFor="toggle-view" className="text-white cursor-pointer">
+              Border
+            </label>
+            <input
+              id="toggle-view"
+              type="checkbox"
+              className="toggle bg-brand-700 hover:bg-brand-500 border-brand-500 checked:bg-brand-500"
+              onChange={(e) => setShowBorder(e.target.checked)}
+              checked={showBorder}
+            />
+          </div>
           <label className="text-white" htmlFor="website-url">
             Website URL{' '}
           </label>
@@ -118,7 +144,12 @@ function App() {
           </div>
         </div>
         <div className="col-span-2">
-          <MockUp imageUrl={imageUrl} input={input} />
+          <MockUp
+            imageUrl={imageUrl}
+            input={input}
+            showInput={showInput}
+            withBorder={showBorder}
+          />
         </div>
       </main>
 
