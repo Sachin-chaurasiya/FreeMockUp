@@ -1,43 +1,16 @@
 import { useState } from 'react';
 import { DownloadButton } from './components/DownloadButton';
 import { MockUp } from './components/Mockup';
-import { FaGithub, FaTimes } from 'react-icons/fa';
+import { FaGithub } from 'react-icons/fa';
+import BgColors from './components/BgColors';
+import { BG_GRADIENT_COLOR_LIST } from './constants';
 
 function App() {
   const [showInput, setShowInput] = useState(true);
   const [showBorder, setShowBorder] = useState(true);
   const [input, setInput] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsUploading(true);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setImageUrl(reader.result as string);
-        setTimeout(() => {
-          setIsUploading(false);
-        }, 1000);
-      };
-
-      reader.onerror = () => {
-        throw new Error('Something went wrong!');
-      };
-    } catch (error) {
-      // handle error
-      setError((error as Error)?.message ?? '');
-      setIsUploading(false);
-
-      setTimeout(() => {
-        setError('');
-      }, 3000);
-    }
-  };
+  const [bgColor, setBgColor] = useState(BG_GRADIENT_COLOR_LIST[25]);
+  const [scale, setScale] = useState(75);
 
   return (
     <div className="p-6 flex flex-col gap-8">
@@ -63,7 +36,30 @@ function App() {
 
       {/* Main here */}
       <main className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8 mt-4">
+        <div className="col-span-2">
+          <MockUp
+            scale={scale}
+            bgColor={bgColor}
+            input={input}
+            showInput={showInput}
+            withBorder={showBorder}
+          />
+        </div>
         <div className="col-span-1 flex flex-col gap-4">
+          {showInput && (
+            <>
+              <label className="text-white" htmlFor="website-url">
+                Website URL{' '}
+              </label>
+              <input
+                id="website-url"
+                className="rounded-md p-2 bg-white text-black outline-brand-500"
+                type="url"
+                placeholder="https://example.com"
+                onChange={(e) => setInput(e.target.value)}
+              />
+            </>
+          )}
           <div className="flex justify-between">
             <label htmlFor="toggle-view" className="text-white cursor-pointer">
               ShowInput
@@ -88,67 +84,27 @@ function App() {
               checked={showBorder}
             />
           </div>
-          <label className="text-white" htmlFor="website-url">
-            Website URL{' '}
+          <label className="text-white" htmlFor="scale">
+            Scale
           </label>
           <input
-            id="website-url"
-            className="rounded-md p-2 bg-white text-black outline-brand-500"
-            type="url"
-            placeholder="https://example.com"
-            onChange={(e) => setInput(e.target.value)}
+            type="range"
+            min={25}
+            max="100"
+            value={scale}
+            className="range range-brand"
+            step="25"
+            onChange={(e) => setScale(Number(e.target.value))}
           />
-
-          <p className="text-white">Screen</p>
-          <div className="flex items-center justify-center w-full">
-            <label
-              htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-64 border-2 border-slate-500 border-dashed rounded-lg cursor-pointer bg-white dark:hover:bg-bray-800 hover:bg-gray-100 hover:border-brand-500"
-            >
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                {isUploading ? (
-                  'Uploading...'
-                ) : (
-                  <>
-                    <svg
-                      className="w-8 h-8 mb-4 text-[#1D232A]"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 20 16"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                      />
-                    </svg>
-                    <p className="mb-2 text-sm text-[#1D232A]">
-                      <span className="font-semibold">Click to upload</span>
-                    </p>
-                    <p className="text-xs text-[#1D232A]">SVG, PNG or JPG.</p>
-                  </>
-                )}
-              </div>
-              <input
-                id="dropzone-file"
-                type="file"
-                accept="image/svg+xml, image/png, image/jpeg"
-                multiple={false}
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </label>
+          <div className="w-full flex justify-between text-xs px-2">
+            <span>25</span>
+            <span>50</span>
+            <span>75</span>
+            <span>100</span>
           </div>
-        </div>
-        <div className="col-span-2">
-          <MockUp
-            imageUrl={imageUrl}
-            input={input}
-            showInput={showInput}
-            withBorder={showBorder}
+          <BgColors
+            selectedBgColor={bgColor}
+            onChangingBgColor={(color) => setBgColor(color)}
           />
         </div>
       </main>
@@ -168,20 +124,6 @@ function App() {
           </a>
         </p>
       </footer>
-
-      {/* Toast messages here */}
-      {error && (
-        <div className="toast toast-top toast-end">
-          <div className="alert bg-red-500 text-white rounded-md px-2 py-3">
-            <span className="flex justify-between items-center gap-4">
-              <span>{error}</span>
-              <button className="cursor-pointer" onClick={() => setError('')}>
-                <FaTimes />
-              </button>
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.range-brand {
+  --range-shdw: theme(colors.brand.500);
+}
