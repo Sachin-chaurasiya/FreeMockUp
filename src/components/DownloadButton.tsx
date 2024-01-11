@@ -1,8 +1,9 @@
 import { FC, useState } from 'react';
-import { toPng } from 'html-to-image';
+import { toBlob, toPng } from 'html-to-image';
 
 export const DownloadButton: FC = () => {
   const [isDownLoading, setIsDownLoading] = useState<boolean>(false);
+  const [isCopying, setIsCopying] = useState<boolean>(false);
 
   const exportImageConfig = {
     node: document.getElementById('mockup-screen') as HTMLElement,
@@ -34,12 +35,43 @@ export const DownloadButton: FC = () => {
     }
   };
 
+  const handleClipboardExport = async () => {
+    try {
+      setIsCopying(true);
+      const blob = await toBlob(
+        exportImageConfig.node,
+        exportImageConfig.options
+      );
+      if (blob) {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob?.type ?? 'image/png']: blob,
+          }),
+        ]);
+        setIsCopying(false);
+        alert('Image copied successfully');
+      }
+    } catch (error) {
+      // handle error
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
   return (
-    <button
-      className="px-4 py-2 bg-brand-500 rounded-md text-white"
-      onClick={handlePngExport}
-    >
-      {isDownLoading ? 'Downloading' : 'Download'}
-    </button>
+    <div className="flex gap-4">
+      <button
+        className="btn btn-sm hover:bg-brand-500 bg-brand-500 rounded-md text-white"
+        onClick={handlePngExport}
+      >
+        {isDownLoading ? 'Exporting' : 'Export'}
+      </button>
+      <button
+        className="btn btn-sm hover:bg-brand-500 bg-brand-500 rounded-md text-white"
+        onClick={handleClipboardExport}
+      >
+        {isCopying ? 'Copying' : 'Copy'}
+      </button>
+    </div>
   );
 };

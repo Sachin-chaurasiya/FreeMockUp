@@ -1,5 +1,6 @@
 import { FC, useMemo, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { DownloadButton } from './DownloadButton';
 
 interface MockUpProps {
   bgColor: string;
@@ -58,6 +59,17 @@ const MockUp: FC<MockUpProps> = ({
 
   return (
     <>
+      {imageUrl && (
+        <div className="flex gap-4 mb-4">
+          <button
+            className="btn btn-sm border-brand-500 bg-brand-500 text-white hover:bg-brand-500 rounded-md"
+            onClick={() => setImageUrl('')}
+          >
+            Clear
+          </button>
+          <DownloadButton />
+        </div>
+      )}
       <div
         id="mockup-screen"
         className={`p-5 ${bgColor} ${

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { DownloadButton } from './components/DownloadButton';
 import { MockUp } from './components/Mockup';
 import { FaGithub } from 'react-icons/fa';
 import BgColors from './components/BgColors';
@@ -21,7 +20,7 @@ function App() {
           <span className="italic">Up</span>
         </h2>
         <div className="flex gap-8 items-center">
-          <span className="text-3xl cursor-pointer text-white">
+          <span className="text-4xl cursor-pointer text-white">
             <a
               href="https://github.com/Sachin-chaurasiya/FreeMockUp"
               target="_blank"
@@ -30,7 +29,6 @@ function App() {
               <FaGithub />
             </a>
           </span>
-          <DownloadButton />
         </div>
       </header>
 
