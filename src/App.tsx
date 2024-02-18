@@ -25,7 +25,7 @@ function App() {
           Turn your screenshots into stunning mockups
         </h2>
         <div
-          className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8"
+          className="grid lg:grid-cols-3 md:grid-cols-3 xss:grid-cols-1 gap-8 px-8"
           id="create-mockup-section"
         >
           <div className="col-span-2">

@@ -2,7 +2,7 @@ import { FaGithub } from 'react-icons/fa';
 
 const Header = () => {
   return (
-    <header className="flex justify-between items-center py-5">
+    <header className="flex justify-between items-center p-5">
       <h2 className="font-bold cursor-pointer text-xl">
         Free<span className="text-brand-500">Mock</span>
         <span className="italic">Up</span>
