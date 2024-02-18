@@ -62,7 +62,7 @@ const MockUp: FC<MockUpProps> = ({
       {imageUrl && (
         <div className="flex gap-4 mb-4">
           <button
-            className="btn btn-sm border-brand-500 bg-brand-500 text-white hover:bg-brand-500 rounded-md"
+            className="btn btn-sm bg-gradient-to-br from-brand-600 to-brand-400 text-white rounded"
             onClick={() => setImageUrl('')}
           >
             Clear

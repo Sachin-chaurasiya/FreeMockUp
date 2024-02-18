@@ -5,3 +5,7 @@
 .range-brand {
   --range-shdw: theme(colors.brand.500);
 }
+
+html {
+  scroll-behavior: smooth;
+}

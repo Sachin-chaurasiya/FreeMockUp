@@ -61,13 +61,13 @@ export const DownloadButton: FC = () => {
   return (
     <div className="flex gap-4">
       <button
-        className="btn btn-sm hover:bg-brand-500 bg-brand-500 rounded-md text-white"
+        className="btn btn-sm bg-gradient-to-br from-brand-600 to-brand-400 text-white rounded"
         onClick={handlePngExport}
       >
         {isDownLoading ? 'Exporting' : 'Export'}
       </button>
       <button
-        className="btn btn-sm hover:bg-brand-500 bg-brand-500 rounded-md text-white"
+        className="btn btn-sm bg-gradient-to-br from-brand-600 to-brand-400 text-white rounded"
         onClick={handleClipboardExport}
       >
         {isCopying ? 'Copying' : 'Copy'}
