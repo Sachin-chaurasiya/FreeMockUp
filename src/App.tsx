@@ -15,12 +15,12 @@ function App() {
     <div className="p-6 flex flex-col gap-8">
       {/* Header here */}
       <header className="flex justify-between items-center">
-        <h2 className="text-white font-bold cursor-pointer text-xl">
+        <h2 className="font-bold cursor-pointer text-xl">
           Free<span className="text-brand-500">Mock</span>
           <span className="italic">Up</span>
         </h2>
         <div className="flex gap-8 items-center">
-          <span className="text-4xl cursor-pointer text-white">
+          <span className="text-4xl cursor-pointer">
             <a
               href="https://github.com/Sachin-chaurasiya/FreeMockUp"
               target="_blank"
@@ -46,12 +46,10 @@ function App() {
         <div className="col-span-1 flex flex-col gap-4">
           {showInput && (
             <>
-              <label className="text-white" htmlFor="website-url">
-                Website URL{' '}
-              </label>
+              <label htmlFor="website-url">Website URL </label>
               <input
                 id="website-url"
-                className="rounded-md p-2 bg-white text-black outline-brand-500"
+                className="rounded-md p-2 text-black outline-brand-500 border border-brand-500 focus:border-brand-500 focus:ring-brand-500"
                 type="url"
                 placeholder="https://example.com"
                 onChange={(e) => setInput(e.target.value)}
@@ -59,7 +57,7 @@ function App() {
             </>
           )}
           <div className="flex justify-between">
-            <label htmlFor="toggle-view" className="text-white cursor-pointer">
+            <label htmlFor="toggle-view" className="cursor-pointer">
               ShowInput
             </label>
             <input
@@ -71,7 +69,7 @@ function App() {
             />
           </div>
           <div className="flex justify-between">
-            <label htmlFor="toggle-view" className="text-white cursor-pointer">
+            <label htmlFor="toggle-view" className="cursor-pointer">
               Border
             </label>
             <input
@@ -82,9 +80,7 @@ function App() {
               checked={showBorder}
             />
           </div>
-          <label className="text-white" htmlFor="scale">
-            Scale
-          </label>
+          <label htmlFor="scale">Scale</label>
           <input
             type="range"
             min={25}
@@ -109,7 +105,7 @@ function App() {
 
       {/* Footer here */}
       <footer>
-        <p className="text-white text-center flex gap-2 items-center justify-center">
+        <p className="text-center flex gap-2 items-center justify-center">
           <span>{new Date().getFullYear()} © FreeMockUp.</span>
           Made with ❤️ by{' '}
           <a
