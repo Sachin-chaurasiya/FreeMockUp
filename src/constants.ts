@@ -2,6 +2,15 @@ export const DEFAULT_SCREEN =
   'https://github.com/open-metadata/OpenMetadata/assets/59080942/efe0e920-8b4c-4894-a8b7-bafc378f14b1';
 
 export const BG_GRADIENT_COLOR_LIST = [
+  // Brand-inspired gradients
+  'bg-gradient-to-br from-primary-50 to-primary-100',
+  'bg-gradient-to-br from-primary-100 to-primary-200',
+  'bg-gradient-to-br from-primary-200 to-primary-300',
+  'bg-gradient-to-br from-primary-50 via-primary-100 to-brand-50',
+  'bg-gradient-to-br from-brand-50 to-brand-100',
+  'bg-gradient-to-br from-brand-100 to-brand-200',
+
+  // Warm orange gradients
   'bg-gradient-to-br from-[#f2b8ff] via-[#e9e4fe] to-[#a9aeff]',
   'bg-gradient-to-br from-[#3de5b3] via-[#fee899] to-[#fff7ef]',
   'bg-gradient-to-br from-[#9fbdd3] to-[#ebe6e2]',
