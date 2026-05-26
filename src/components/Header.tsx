@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { FaStar, FaBars, FaTimes } from "react-icons/fa";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -23,20 +26,29 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold gradient-text cursor-pointer">
-                <a
-                  href="#top"
+              <span className="text-2xl font-bold gradient-text">
+                <Link
+                  to="/"
                   aria-label="FreeMockUp home"
                   className="focus-ring rounded"
                 >
                   FreeMockUp
-                </a>
-              </h1>
+                </Link>
+              </span>
             </div>
           </div>
 
-          {/* GitHub Star & Mobile Menu Button */}
-          <div className="flex items-center gap-4">
+          {/* CTA, GitHub Star & Mobile Menu Button */}
+          <div className="flex items-center gap-3">
+            {isLanding && (
+              <Link
+                to="/app"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus-ring transition-all"
+              >
+                Open Editor
+              </Link>
+            )}
+
             <a
               href="https://github.com/Sachin-chaurasiya/FreeMockUp"
               target="_blank"
@@ -45,7 +57,7 @@ const Header = () => {
               aria-label="Star FreeMockUp on GitHub"
             >
               <FaStar className="text-yellow-500" aria-hidden="true" />
-              <span>Star on GitHub</span>
+              <span className="hidden sm:inline">Star on GitHub</span>
             </a>
 
             {/* Mobile menu button */}
@@ -73,20 +85,28 @@ const Header = () => {
             id="mobile-menu"
             role="menu"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <div className="pt-4 pb-2">
-                <a
-                  href="https://github.com/Sachin-chaurasiya/FreeMockUp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-brand-700 bg-brand-50 hover:bg-primary-50 focus-ring transition-all duration-200"
+            <div className="px-2 pt-3 pb-3 space-y-2">
+              {isLanding && (
+                <Link
+                  to="/app"
                   onClick={closeMobileMenu}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 focus-ring transition-all"
                   role="menuitem"
                 >
-                  <FaStar className="text-yellow-500" aria-hidden="true" />
-                  <span>Star on GitHub</span>
-                </a>
-              </div>
+                  Open Editor
+                </Link>
+              )}
+              <a
+                href="https://github.com/Sachin-chaurasiya/FreeMockUp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium rounded-lg text-brand-700 bg-brand-50 hover:bg-primary-50 focus-ring transition-all duration-200"
+                onClick={closeMobileMenu}
+                role="menuitem"
+              >
+                <FaStar className="text-yellow-500" aria-hidden="true" />
+                <span>Star on GitHub</span>
+              </a>
             </div>
           </div>
         )}

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50">
@@ -33,8 +35,8 @@ export const HeroSection = () => {
 
         {/* CTA Button */}
         <div className="mt-10 flex justify-center">
-          <a
-            href="#create-mockup-section"
+          <Link
+            to="/app"
             className="inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Start Creating Free
@@ -49,7 +51,7 @@ export const HeroSection = () => {
                 clipRule="evenodd"
               />
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

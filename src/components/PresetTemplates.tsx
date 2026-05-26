@@ -78,10 +78,7 @@ export const PresetTemplates: FC<PresetTemplatesProps> = ({
   onSelectPreset,
 }) => {
   return (
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-brand-700 mb-3">
-        Quick Templates
-      </label>
+    <div>
       <div className="grid grid-cols-2 gap-3">
         {PRESET_TEMPLATES.map((preset) => {
           const Icon = DEVICE_ICON[preset.deviceType];
