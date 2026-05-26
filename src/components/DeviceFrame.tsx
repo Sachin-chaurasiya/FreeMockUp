@@ -34,7 +34,7 @@ export const DeviceFrame: FC<DeviceFrameProps> = ({
   if (deviceType === "phone") {
     return (
       <div
-        className={`relative ${FRAME_WIDTH.phone} ${outerBorder} bg-gray-900 rounded-[2.5rem] p-3 shadow-xl`}
+        className={`relative ${FRAME_WIDTH.phone} ${outerBorder} bg-gray-900 rounded-[2.5rem] p-3`}
       >
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
           <div className="h-1.5 w-12 bg-gray-700 rounded-full"></div>
@@ -53,7 +53,7 @@ export const DeviceFrame: FC<DeviceFrameProps> = ({
   if (deviceType === "tablet") {
     return (
       <div
-        className={`relative ${FRAME_WIDTH.tablet} ${outerBorder} bg-gray-900 rounded-[1.75rem] p-3 shadow-xl`}
+        className={`relative ${FRAME_WIDTH.tablet} ${outerBorder} bg-gray-900 rounded-[1.75rem] p-3`}
       >
         <div
           className="overflow-hidden bg-white"
@@ -72,7 +72,7 @@ export const DeviceFrame: FC<DeviceFrameProps> = ({
         <div
           className={`w-full overflow-hidden ${outerBorder} ${
             isDark ? "bg-gray-900" : "bg-white"
-          } shadow-xl`}
+          }`}
           style={screenRadius}
         >
           <BrowserChrome url={url} showInput={showInput} />
@@ -95,7 +95,7 @@ export const DeviceFrame: FC<DeviceFrameProps> = ({
     <div
       className={`${FRAME_WIDTH.desktop} ${outerBorder} overflow-hidden ${
         isDark ? "bg-gray-900" : "bg-white"
-      } shadow-xl`}
+      }`}
       style={screenRadius}
     >
       <BrowserChrome url={url} showInput={showInput} />

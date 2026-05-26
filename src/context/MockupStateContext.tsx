@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useUndoableState, UndoableState } from "../hooks/useUndoableState";
 import { DeviceType } from "../components/DeviceSelector";
 import { BrowserTheme } from "../components/ThemeSelector";
@@ -41,11 +47,32 @@ export const DEFAULT_STATE: MockupState = {
 
 const STORAGE_KEY = "freemockup:state:v1";
 
+/**
+ * Fields that are part of a PresetTemplate. Editing any of them invalidates
+ * the active preset selection; editing others (padding, shadow, theme, etc.)
+ * does not.
+ */
+const PRESET_TRACKED_FIELDS: (keyof MockupState)[] = [
+  "deviceType",
+  "scale",
+  "showInput",
+  "showBorder",
+  "bgColor",
+  "input",
+];
+
 type Value = UndoableState<MockupState> & {
-  /** Patches state and clears the active preset (use for direct edits). */
+  /** Patches state and clears the active preset if a preset-tracked field changed. */
   update: (patch: Partial<MockupState>) => void;
   /** Apply a preset template to state. */
   applyPreset: (preset: PresetTemplate) => void;
+  /**
+   * Uploaded screenshot data URL. Lives outside the persisted/undoable state:
+   * data URLs are too large for localStorage, and the image is independent
+   * of the customization settings.
+   */
+  imageUrl: string;
+  setImageUrl: (url: string) => void;
 };
 
 const MockupContext = createContext<Value | null>(null);
@@ -60,10 +87,14 @@ export const useMockupState = (): Value => {
 export const MockupStateProvider = ({ children }: { children: ReactNode }) => {
   const undoable = useUndoableState(DEFAULT_STATE, STORAGE_KEY);
   const { set, undo, redo } = undoable;
+  const [imageUrl, setImageUrl] = useState("");
 
   const value: Value = {
     ...undoable,
-    update: (patch) => set({ ...patch, activePresetId: null }),
+    update: (patch) => {
+      const touchesPresetField = PRESET_TRACKED_FIELDS.some((f) => f in patch);
+      set(touchesPresetField ? { ...patch, activePresetId: null } : patch);
+    },
     applyPreset: (preset) =>
       set({
         activePresetId: preset.id,
@@ -74,6 +105,8 @@ export const MockupStateProvider = ({ children }: { children: ReactNode }) => {
         bgColor: preset.bgColor,
         input: preset.url,
       }),
+    imageUrl,
+    setImageUrl,
   };
 
   // Global Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z, yielding to text inputs.

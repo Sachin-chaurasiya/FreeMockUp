@@ -8,6 +8,7 @@ import {
 import { DeviceType } from "./DeviceSelector";
 import { BrowserTheme } from "./ThemeSelector";
 import { DeviceFrame } from "./DeviceFrame";
+import { useMockupState } from "../context/MockupStateContext";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -51,7 +52,7 @@ const MockUp: FC<MockUpProps> = ({
   exportFormat = "png",
   exportScale = 2,
 }) => {
-  const [imageUrl, setImageUrl] = useState("");
+  const { imageUrl, setImageUrl } = useMockupState();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
