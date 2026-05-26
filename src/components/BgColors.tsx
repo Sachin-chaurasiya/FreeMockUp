@@ -12,7 +12,6 @@ const BgColors: FC<BgColorsProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-4">
-      <h3>Background</h3>
       <div className="grid flex-wrap grid-cols-8 gap-[1px] relative overflow-hidden rounded-md shadow">
         {BG_GRADIENT_COLOR_LIST.map((color) => (
           <div

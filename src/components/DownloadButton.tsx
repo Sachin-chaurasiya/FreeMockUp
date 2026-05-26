@@ -1,59 +1,54 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { toBlob, toPng } from "html-to-image";
-import { FaDownload, FaCopy } from "react-icons/fa";
+import { FaDownload, FaCopy, FaCheck } from "react-icons/fa";
+
+const EXPORT_OPTIONS = { quality: 1 };
+
+const getMockupNode = () =>
+  document.getElementById("mockup-screen") as HTMLElement | null;
 
 export const DownloadButton: FC = () => {
-  const [isDownLoading, setIsDownLoading] = useState<boolean>(false);
-  const [isCopying, setIsCopying] = useState<boolean>(false);
+  const [isDownLoading, setIsDownLoading] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const exportImageConfig = {
-    node: document.getElementById("mockup-screen") as HTMLElement,
-    options: {
-      quality: 1,
-    },
-  };
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   const downloadImage = (dataUrl: string, extension: string) => {
     const a = document.createElement("a");
-
     a.setAttribute("download", `freemockup.${extension}`);
     a.setAttribute("href", dataUrl);
     a.click();
   };
 
   const handlePngExport = async () => {
+    const node = getMockupNode();
+    if (!node) return;
     try {
       setIsDownLoading(true);
-      const url = await toPng(
-        exportImageConfig.node,
-        exportImageConfig.options
-      );
+      const url = await toPng(node, EXPORT_OPTIONS);
       downloadImage(url, "png");
-    } catch (error) {
-      // handle error
     } finally {
       setIsDownLoading(false);
     }
   };
 
   const handleClipboardExport = async () => {
+    const node = getMockupNode();
+    if (!node) return;
     try {
       setIsCopying(true);
-      const blob = await toBlob(
-        exportImageConfig.node,
-        exportImageConfig.options
-      );
+      const blob = await toBlob(node, EXPORT_OPTIONS);
       if (blob) {
         await navigator.clipboard.write([
-          new ClipboardItem({
-            [blob?.type ?? "image/png"]: blob,
-          }),
+          new ClipboardItem({ [blob.type ?? "image/png"]: blob }),
         ]);
-        setIsCopying(false);
-        alert("Image copied successfully");
+        setCopied(true);
       }
-    } catch (error) {
-      // handle error
     } finally {
       setIsCopying(false);
     }
@@ -74,8 +69,17 @@ export const DownloadButton: FC = () => {
         onClick={handleClipboardExport}
         disabled={isCopying}
       >
-        <FaCopy className="mr-2" />
-        {isCopying ? "Copying..." : "Copy Image"}
+        {copied ? (
+          <>
+            <FaCheck className="mr-2 text-green-600" />
+            Copied
+          </>
+        ) : (
+          <>
+            <FaCopy className="mr-2" />
+            {isCopying ? "Copying..." : "Copy Image"}
+          </>
+        )}
       </button>
     </div>
   );

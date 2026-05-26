@@ -1,8 +1,11 @@
-import { FC, useMemo, useState, useEffect } from "react";
+import { FC, useMemo, useState, useEffect, useCallback } from "react";
 import { FaTimes, FaExpand } from "react-icons/fa";
 import { DownloadButton } from "./DownloadButton";
 import { DeviceType } from "./DeviceSelector";
 import { BrowserTheme } from "./ThemeSelector";
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 interface MockUpProps {
   bgColor: string;
@@ -27,6 +30,7 @@ const MockUp: FC<MockUpProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Handle Escape key and click outside to close fullscreen
   useEffect(() => {
@@ -56,33 +60,81 @@ const MockUp: FC<MockUpProps> = ({
     };
   }, [isFullscreen]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsUploading(true);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
+  const showError = useCallback((message: string) => {
+    setError(message);
+    setIsUploading(false);
+    setTimeout(() => setError(""), 3000);
+  }, []);
+
+  const processFile = useCallback(
+    (file: File) => {
+      if (!ACCEPTED_MIME_TYPES.includes(file.type)) {
+        showError("Unsupported file type. Please use PNG, JPG, or WebP.");
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        showError("File is larger than 10MB.");
+        return;
+      }
+
+      setIsUploading(true);
       const reader = new FileReader();
-      reader.readAsDataURL(file);
       reader.onloadend = () => {
         setImageUrl(reader.result as string);
-        setTimeout(() => {
-          setIsUploading(false);
-        }, 1000);
+        setIsUploading(false);
       };
-
       reader.onerror = () => {
-        throw new Error("Something went wrong!");
+        showError("Could not read the file. Please try again.");
       };
-    } catch (error) {
-      // handle error
-      setError((error as Error)?.message ?? "");
-      setIsUploading(false);
+      reader.readAsDataURL(file);
+    },
+    [showError]
+  );
 
-      setTimeout(() => {
-        setError("");
-      }, 3000);
-    }
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
   };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    if (!isDragOver) setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  // Paste-from-clipboard support (Cmd/Ctrl+V) — only active before an image is uploaded.
+  useEffect(() => {
+    if (imageUrl) return;
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === "file" && item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            processFile(file);
+            e.preventDefault();
+            return;
+          }
+        }
+      }
+    };
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [imageUrl, processFile]);
 
   const scaleClass = useMemo(() => {
     if (scale === 75) return "scale-75";
@@ -211,7 +263,15 @@ const MockUp: FC<MockUpProps> = ({
             <div className="w-full max-w-md">
               <label
                 htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-72 border-2 border-brand-200 border-dashed rounded-2xl cursor-pointer bg-gradient-to-br from-white to-brand-50/50 hover:from-primary-25 hover:to-primary-50/50 hover:border-primary-300 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`flex flex-col items-center justify-center w-full h-72 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group ${
+                  isDragOver
+                    ? "border-primary-500 bg-primary-50"
+                    : "border-brand-200 bg-gradient-to-br from-white to-brand-50/50 hover:from-primary-25 hover:to-primary-50/50 hover:border-primary-300"
+                }`}
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4">
                   {isUploading ? (
@@ -245,11 +305,13 @@ const MockUp: FC<MockUpProps> = ({
                       </div>
                       <div className="text-center">
                         <p className="mb-3 text-lg font-semibold text-brand-900">
-                          Upload Your Screenshot
+                          {isDragOver
+                            ? "Drop to upload"
+                            : "Upload Your Screenshot"}
                         </p>
                         <p className="mb-4 text-sm text-brand-600 max-w-sm">
-                          Drag and drop your image here, or click to browse.
-                          We'll transform it into a beautiful mockup instantly.
+                          Drag and drop, click to browse, or paste from your
+                          clipboard (⌘V / Ctrl+V).
                         </p>
                         <div className="flex flex-wrap justify-center gap-2 text-xs text-brand-500">
                           <span className="bg-brand-100 px-2 py-1 rounded-full">

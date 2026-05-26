@@ -156,11 +156,11 @@ function App() {
                 </div>
               </div>
 
-              {/* Controls Panel - Right Side (Scrollable) */}
+              {/* Controls Panel - Right Side */}
               <div className="order-1 lg:order-2">
-                <div className="bg-white rounded-2xl shadow-xl border border-brand-100 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto">
+                <div className="bg-white rounded-2xl shadow-xl border border-brand-100 h-fit">
                   {/* Header */}
-                  <div className="p-6 pb-4 sticky top-0 bg-white border-b border-brand-100 z-10">
+                  <div className="p-6 pb-4 border-b border-brand-100">
                     <h3 className="text-xl font-bold text-brand-900 mb-2">
                       Customize Your Mockup
                     </h3>
