@@ -269,7 +269,7 @@ function App() {
                           max="100"
                           value={scale}
                           className="range range-primary w-full h-2"
-                          step="25"
+                          step="5"
                           onChange={(e) => setScale(Number(e.target.value))}
                         />
                         <div className="flex justify-between text-xs text-brand-500 mt-2">

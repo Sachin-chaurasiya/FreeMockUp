@@ -1,8 +1,16 @@
-import { FC, useMemo, useState, useEffect, useCallback } from "react";
+import { FC, useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { FaTimes, FaExpand } from "react-icons/fa";
 import { DownloadButton } from "./DownloadButton";
 import { DeviceType } from "./DeviceSelector";
 import { BrowserTheme } from "./ThemeSelector";
+import { BrowserChrome } from "./BrowserChrome";
+
+const DEVICE_MAX_WIDTH: Record<DeviceType, string> = {
+  phone: "max-w-sm",
+  tablet: "max-w-md",
+  laptop: "max-w-2xl",
+  desktop: "max-w-4xl",
+};
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -31,31 +39,21 @@ const MockUp: FC<MockUpProps> = ({
   const [error, setError] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   // Handle Escape key and click outside to close fullscreen
   useEffect(() => {
+    if (!isFullscreen) return;
+
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isFullscreen) {
-        setIsFullscreen(false);
-      }
+      if (e.key === "Escape") setIsFullscreen(false);
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (isFullscreen && target.classList.contains("fullscreen-overlay")) {
-        setIsFullscreen(false);
-      }
-    };
-
-    if (isFullscreen) {
-      document.addEventListener("keydown", handleEscape);
-      document.addEventListener("click", handleClickOutside);
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
-    }
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("click", handleClickOutside);
       document.body.style.overflow = "unset";
     };
   }, [isFullscreen]);
@@ -136,17 +134,12 @@ const MockUp: FC<MockUpProps> = ({
     return () => document.removeEventListener("paste", handlePaste);
   }, [imageUrl, processFile]);
 
-  const scaleClass = useMemo(() => {
-    if (scale === 75) return "scale-75";
-    if (scale === 50) return "scale-50";
-    if (scale === 25) return "scale-[0.25]";
-    if (scale === 100) return "scale-100";
-    return "";
-  }, [scale]);
+  const scaleStyle = useMemo(
+    () => ({ transform: `scale(${scale / 100})`, transformOrigin: "center" }),
+    [scale]
+  );
 
-  // Container classes are now handled within getBrowserThemeClasses
-
-  const getActualTheme = useMemo(() => {
+  const resolvedTheme = useMemo(() => {
     if (browserTheme === "auto") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
@@ -155,25 +148,11 @@ const MockUp: FC<MockUpProps> = ({
     return browserTheme;
   }, [browserTheme]);
 
-  const getBrowserThemeClasses = useMemo(() => {
-    const baseClasses = "mockup-browser";
-    const themeClass =
-      getActualTheme === "dark" ? "mockup-browser-dark" : "bg-base-300";
-    const borderClass = withBorder ? "border" : "";
-    const scaleClassName = scaleClass;
-
-    switch (deviceType) {
-      case "phone":
-        return `${baseClasses} ${themeClass} ${borderClass} ${scaleClassName} max-w-sm`;
-      case "tablet":
-        return `${baseClasses} ${themeClass} ${borderClass} ${scaleClassName} max-w-md`;
-      case "laptop":
-        return `${baseClasses} ${themeClass} ${borderClass} ${scaleClassName} max-w-2xl`;
-      case "desktop":
-      default:
-        return `${baseClasses} ${themeClass} ${borderClass} ${scaleClassName} max-w-4xl`;
-    }
-  }, [deviceType, getActualTheme, withBorder, scaleClass]);
+  const browserClasses = useMemo(() => {
+    const theme = resolvedTheme === "dark" ? "mockup-browser-dark" : "bg-base-300";
+    const border = withBorder ? "border" : "";
+    return `mockup-browser ${theme} ${border} ${DEVICE_MAX_WIDTH[deviceType]}`;
+  }, [deviceType, resolvedTheme, withBorder]);
 
   return (
     <>
@@ -215,43 +194,8 @@ const MockUp: FC<MockUpProps> = ({
         }`}
       >
         {imageUrl ? (
-          <div className={getBrowserThemeClasses}>
-            {/* macOS-style browser header */}
-            <div className="flex items-center h-10 bg-gradient-to-b from-gray-100 to-gray-200 border-b border-gray-300 px-4">
-              {/* Traffic light buttons */}
-              <div className="flex items-center space-x-2 mr-4">
-                <div className="w-3 h-3 bg-red-500 rounded-full border border-red-600"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full border border-yellow-600"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full border border-green-600"></div>
-              </div>
-
-              {/* URL bar */}
-              {showInput && (
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="flex items-center bg-white rounded-md px-3 py-1 shadow-sm border border-gray-300 max-w-md w-full">
-                    <svg
-                      className="w-4 h-4 text-gray-400 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
-                    <span className="text-sm text-gray-600 truncate">
-                      {input || "https://example.com"}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Spacer for balance */}
-              <div className="w-16"></div>
-            </div>
+          <div className={browserClasses} style={scaleStyle}>
+            <BrowserChrome url={input} showInput={showInput} />
             <img
               src={imageUrl}
               alt="custom-mockup-screen"
@@ -361,7 +305,12 @@ const MockUp: FC<MockUpProps> = ({
 
       {/* Fullscreen Modal */}
       {isFullscreen && imageUrl && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4 fullscreen-overlay">
+        <div
+          ref={overlayRef}
+          onClick={(e) => {
+            if (e.target === overlayRef.current) setIsFullscreen(false);
+          }}
+          className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
           <div className="relative max-w-full max-h-full bg-white rounded-2xl shadow-2xl overflow-hidden">
             {/* Fullscreen Header */}
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-brand-200">
@@ -391,43 +340,8 @@ const MockUp: FC<MockUpProps> = ({
               className={`p-8 ${bgColor} max-h-[calc(100vh-200px)] overflow-auto`}
             >
               <div className="flex justify-center">
-                <div className={getBrowserThemeClasses}>
-                  {/* macOS-style browser header */}
-                  <div className="flex items-center h-10 bg-gradient-to-b from-gray-100 to-gray-200 border-b border-gray-300 px-4">
-                    {/* Traffic light buttons */}
-                    <div className="flex items-center space-x-2 mr-4">
-                      <div className="w-3 h-3 bg-red-500 rounded-full border border-red-600"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full border border-yellow-600"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full border border-green-600"></div>
-                    </div>
-
-                    {/* URL bar */}
-                    {showInput && (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="flex items-center bg-white rounded-md px-3 py-1 shadow-sm border border-gray-300 max-w-md w-full">
-                          <svg
-                            className="w-4 h-4 text-gray-400 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                            />
-                          </svg>
-                          <span className="text-sm text-gray-600 truncate">
-                            {input || "https://example.com"}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Spacer for balance */}
-                    <div className="w-16"></div>
-                  </div>
+                <div className={browserClasses}>
+                  <BrowserChrome url={input} showInput={showInput} />
                   <img
                     src={imageUrl}
                     alt="fullscreen-mockup-screen"
