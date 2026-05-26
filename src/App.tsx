@@ -1,28 +1,56 @@
 import { useState } from "react";
-import { MockUp } from "./components/Mockup";
+import { MockUp, ShadowSize } from "./components/Mockup";
 import BgColors from "./components/BgColors";
 import { DeviceSelector, DeviceType } from "./components/DeviceSelector";
 import { PresetTemplates, PresetTemplate } from "./components/PresetTemplates";
 import { ThemeSelector, BrowserTheme } from "./components/ThemeSelector";
+import { ExportFormat, ExportScale } from "./components/DownloadButton";
 import { BG_GRADIENT_COLOR_LIST } from "./constants";
 import Header from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
+
+const SHADOW_OPTIONS: ShadowSize[] = ["none", "sm", "md", "lg", "xl"];
+const FORMAT_OPTIONS: ExportFormat[] = ["png", "jpeg", "webp"];
+const SCALE_OPTIONS: ExportScale[] = [1, 2, 3];
 
 function App() {
   const [showInput, setShowInput] = useState(true);
   const [showBorder, setShowBorder] = useState(true);
   const [input, setInput] = useState("");
-  const [bgColor, setBgColor] = useState(BG_GRADIENT_COLOR_LIST[25]);
-  const [scale, setScale] = useState(100);
-  const [deviceType, setDeviceType] = useState<DeviceType>("desktop");
+  const [bgColor, setBgColorState] = useState(BG_GRADIENT_COLOR_LIST[25]);
+  const [scale, setScaleState] = useState(100);
+  const [deviceType, setDeviceTypeState] = useState<DeviceType>("desktop");
   const [browserTheme, setBrowserTheme] = useState<BrowserTheme>("light");
+  const [padding, setPadding] = useState(48);
+  const [shadow, setShadow] = useState<ShadowSize>("xl");
+  const [cornerRadius, setCornerRadius] = useState(8);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
+  const [exportScale, setExportScale] = useState<ExportScale>(2);
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+
+  // Clear preset selection whenever the user manually edits any frame setting,
+  // so the visually-selected card always reflects the current state.
+  const clearPreset = () => setActivePresetId(null);
+  const setBgColor = (c: string) => {
+    clearPreset();
+    setBgColorState(c);
+  };
+  const setScale = (s: number) => {
+    clearPreset();
+    setScaleState(s);
+  };
+  const setDeviceType = (d: DeviceType) => {
+    clearPreset();
+    setDeviceTypeState(d);
+  };
 
   const handlePresetSelect = (preset: PresetTemplate) => {
-    setDeviceType(preset.deviceType);
-    setScale(preset.scale);
+    setActivePresetId(preset.id);
+    setDeviceTypeState(preset.deviceType);
+    setScaleState(preset.scale);
     setShowInput(preset.showInput);
     setShowBorder(preset.showBorder);
-    setBgColor(preset.bgColor);
+    setBgColorState(preset.bgColor);
     setInput(preset.url);
   };
 
@@ -151,6 +179,11 @@ function App() {
                       withBorder={showBorder}
                       deviceType={deviceType}
                       browserTheme={browserTheme}
+                      padding={padding}
+                      shadow={shadow}
+                      cornerRadius={cornerRadius}
+                      exportFormat={exportFormat}
+                      exportScale={exportScale}
                     />
                   </div>
                 </div>
@@ -172,7 +205,10 @@ function App() {
                   {/* Content */}
                   <div className="p-6 space-y-6">
                     {/* Quick Templates */}
-                    <PresetTemplates onSelectPreset={handlePresetSelect} />
+                    <PresetTemplates
+                      selectedId={activePresetId}
+                      onSelectPreset={handlePresetSelect}
+                    />
 
                     {/* Device & Theme */}
                     <div>
@@ -277,6 +313,135 @@ function App() {
                           <span>50%</span>
                           <span>75%</span>
                           <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Frame */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-brand-800 mb-4 uppercase tracking-wider">
+                        Frame
+                      </h4>
+
+                      <div className="mb-4">
+                        <label
+                          htmlFor="padding"
+                          className="block text-sm font-medium text-brand-700 mb-2"
+                        >
+                          Padding:{" "}
+                          <span className="font-semibold text-primary-600">
+                            {padding}px
+                          </span>
+                        </label>
+                        <input
+                          id="padding"
+                          type="range"
+                          min={0}
+                          max={96}
+                          step={4}
+                          value={padding}
+                          className="range range-primary w-full h-2"
+                          onChange={(e) => setPadding(Number(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label
+                          htmlFor="corner-radius"
+                          className="block text-sm font-medium text-brand-700 mb-2"
+                        >
+                          Corner Radius:{" "}
+                          <span className="font-semibold text-primary-600">
+                            {cornerRadius}px
+                          </span>
+                        </label>
+                        <input
+                          id="corner-radius"
+                          type="range"
+                          min={0}
+                          max={32}
+                          step={1}
+                          value={cornerRadius}
+                          className="range range-primary w-full h-2"
+                          onChange={(e) =>
+                            setCornerRadius(Number(e.target.value))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-brand-700 mb-2">
+                          Shadow
+                        </label>
+                        <div className="grid grid-cols-5 gap-2">
+                          {SHADOW_OPTIONS.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setShadow(s)}
+                              className={`px-2 py-2 text-xs font-medium rounded-md border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                                shadow === s
+                                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                                  : "border-brand-200 bg-white text-brand-700 hover:border-primary-300"
+                              }`}
+                              aria-pressed={shadow === s}
+                            >
+                              {s === "none" ? "None" : s.toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Export Options */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-brand-800 mb-4 uppercase tracking-wider">
+                        Export
+                      </h4>
+
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-brand-700 mb-2">
+                          Format
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {FORMAT_OPTIONS.map((f) => (
+                            <button
+                              key={f}
+                              type="button"
+                              onClick={() => setExportFormat(f)}
+                              className={`px-2 py-2 text-xs font-medium rounded-md border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                                exportFormat === f
+                                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                                  : "border-brand-200 bg-white text-brand-700 hover:border-primary-300"
+                              }`}
+                              aria-pressed={exportFormat === f}
+                            >
+                              {f.toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-brand-700 mb-2">
+                          Resolution
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {SCALE_OPTIONS.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setExportScale(s)}
+                              className={`px-2 py-2 text-xs font-medium rounded-md border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                                exportScale === s
+                                  ? "border-primary-500 bg-primary-50 text-primary-700"
+                                  : "border-brand-200 bg-white text-brand-700 hover:border-primary-300"
+                              }`}
+                              aria-pressed={exportScale === s}
+                            >
+                              {s}×
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>

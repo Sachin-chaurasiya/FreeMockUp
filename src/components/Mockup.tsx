@@ -1,19 +1,26 @@
 import { FC, useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { FaTimes, FaExpand } from "react-icons/fa";
-import { DownloadButton } from "./DownloadButton";
+import {
+  DownloadButton,
+  ExportFormat,
+  ExportScale,
+} from "./DownloadButton";
 import { DeviceType } from "./DeviceSelector";
 import { BrowserTheme } from "./ThemeSelector";
-import { BrowserChrome } from "./BrowserChrome";
-
-const DEVICE_MAX_WIDTH: Record<DeviceType, string> = {
-  phone: "max-w-sm",
-  tablet: "max-w-md",
-  laptop: "max-w-2xl",
-  desktop: "max-w-4xl",
-};
+import { DeviceFrame } from "./DeviceFrame";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+const SHADOW_CLASSES: Record<string, string> = {
+  none: "",
+  sm: "drop-shadow-sm",
+  md: "drop-shadow-md",
+  lg: "drop-shadow-lg",
+  xl: "drop-shadow-2xl",
+};
+
+export type ShadowSize = keyof typeof SHADOW_CLASSES;
 
 interface MockUpProps {
   bgColor: string;
@@ -23,6 +30,11 @@ interface MockUpProps {
   withBorder?: boolean;
   deviceType?: DeviceType;
   browserTheme?: BrowserTheme;
+  padding?: number;
+  shadow?: ShadowSize;
+  cornerRadius?: number;
+  exportFormat?: ExportFormat;
+  exportScale?: ExportScale;
 }
 
 const MockUp: FC<MockUpProps> = ({
@@ -30,9 +42,14 @@ const MockUp: FC<MockUpProps> = ({
   bgColor,
   showInput = true,
   withBorder = true,
-  scale = 75,
+  scale = 100,
   deviceType = "desktop",
   browserTheme = "light",
+  padding = 32,
+  shadow = "xl",
+  cornerRadius = 8,
+  exportFormat = "png",
+  exportScale = 2,
 }) => {
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -41,7 +58,7 @@ const MockUp: FC<MockUpProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
-  // Handle Escape key and click outside to close fullscreen
+  // Handle Escape key to close fullscreen
   useEffect(() => {
     if (!isFullscreen) return;
 
@@ -135,7 +152,10 @@ const MockUp: FC<MockUpProps> = ({
   }, [imageUrl, processFile]);
 
   const scaleStyle = useMemo(
-    () => ({ transform: `scale(${scale / 100})`, transformOrigin: "center" }),
+    () => ({
+      transform: `scale(${scale / 100})`,
+      transformOrigin: "center top",
+    }),
     [scale]
   );
 
@@ -148,11 +168,31 @@ const MockUp: FC<MockUpProps> = ({
     return browserTheme;
   }, [browserTheme]);
 
-  const browserClasses = useMemo(() => {
-    const theme = resolvedTheme === "dark" ? "mockup-browser-dark" : "bg-base-300";
-    const border = withBorder ? "border" : "";
-    return `mockup-browser ${theme} ${border} ${DEVICE_MAX_WIDTH[deviceType]}`;
-  }, [deviceType, resolvedTheme, withBorder]);
+  const renderMockupImage = () => (
+    <img
+      src={imageUrl}
+      alt="custom-mockup-screen"
+      className="w-full h-auto object-cover block"
+    />
+  );
+
+  const renderFrame = (scaled: boolean) => (
+    <div
+      className={SHADOW_CLASSES[shadow] || ""}
+      style={scaled ? scaleStyle : undefined}
+    >
+      <DeviceFrame
+        deviceType={deviceType}
+        url={input}
+        showInput={showInput}
+        withBorder={withBorder}
+        isDark={resolvedTheme === "dark"}
+        cornerRadius={cornerRadius}
+      >
+        {renderMockupImage()}
+      </DeviceFrame>
+    </div>
+  );
 
   return (
     <>
@@ -184,24 +224,18 @@ const MockUp: FC<MockUpProps> = ({
             <FaExpand className="w-4 h-4 mr-2" />
             Fullscreen
           </button>
-          <DownloadButton />
+          <DownloadButton format={exportFormat} pixelRatio={exportScale} />
         </div>
       )}
       <div
         id="mockup-screen"
-        className={`p-5 ${bgColor} ${
-          imageUrl ? "" : "flex justify-center items-center h-[550px]"
+        className={`${bgColor} ${
+          imageUrl ? "flex justify-center" : "flex justify-center items-center h-[550px]"
         }`}
+        style={imageUrl ? { padding: `${padding}px` } : { padding: "20px" }}
       >
         {imageUrl ? (
-          <div className={browserClasses} style={scaleStyle}>
-            <BrowserChrome url={input} showInput={showInput} />
-            <img
-              src={imageUrl}
-              alt="custom-mockup-screen"
-              className="w-full h-auto object-cover"
-            />
-          </div>
+          renderFrame(true)
         ) : (
           <div className="flex justify-center items-center w-full">
             <div className="w-full max-w-md">
@@ -310,9 +344,9 @@ const MockUp: FC<MockUpProps> = ({
           onClick={(e) => {
             if (e.target === overlayRef.current) setIsFullscreen(false);
           }}
-          className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
+          className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4"
+        >
           <div className="relative max-w-full max-h-full bg-white rounded-2xl shadow-2xl overflow-hidden">
-            {/* Fullscreen Header */}
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-brand-200">
               <div>
                 <h3 className="text-lg font-semibold text-brand-900">
@@ -335,25 +369,15 @@ const MockUp: FC<MockUpProps> = ({
               </button>
             </div>
 
-            {/* Fullscreen Content */}
             <div
-              className={`p-8 ${bgColor} max-h-[calc(100vh-200px)] overflow-auto`}
+              className={`${bgColor} max-h-[calc(100vh-200px)] overflow-auto flex justify-center`}
+              style={{ padding: `${padding}px` }}
             >
-              <div className="flex justify-center">
-                <div className={browserClasses}>
-                  <BrowserChrome url={input} showInput={showInput} />
-                  <img
-                    src={imageUrl}
-                    alt="fullscreen-mockup-screen"
-                    className="w-full h-auto object-cover max-h-[calc(100vh-300px)]"
-                  />
-                </div>
-              </div>
+              {renderFrame(false)}
             </div>
 
-            {/* Fullscreen Footer with actions */}
             <div className="flex justify-center gap-4 p-4 bg-white border-t border-brand-200">
-              <DownloadButton />
+              <DownloadButton format={exportFormat} pixelRatio={exportScale} />
               <button
                 className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-brand-700 bg-brand-50 border border-brand-200 hover:bg-brand-100 focus-ring transition-all duration-200"
                 onClick={() => setIsFullscreen(false)}
