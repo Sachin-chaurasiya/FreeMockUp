@@ -8,6 +8,7 @@ import { ExportFormat, ExportScale } from "./components/DownloadButton";
 import { BG_GRADIENT_COLOR_LIST } from "./constants";
 import Header from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
+import { FeaturesSection } from "./components/FeaturesSection";
 
 const SHADOW_OPTIONS: ShadowSize[] = ["none", "sm", "md", "lg", "xl"];
 const FORMAT_OPTIONS: ExportFormat[] = ["png", "jpeg", "webp"];
@@ -69,36 +70,6 @@ function App() {
 
       {/* Main Content */}
       <main id="main-content">
-        {/* SEO-friendly hidden content for search engines */}
-        <div className="sr-only">
-          <h1>FreeMockUp - Professional Browser Mockup Generator</h1>
-          <p>
-            Create stunning browser mockups from your screenshots for free.
-            Transform any screenshot into a professional mockup for portfolios,
-            presentations, and client pitches. Support for desktop, tablet,
-            mobile, and laptop devices.
-          </p>
-          <h2>Features</h2>
-          <ul>
-            <li>Free browser mockup generator</li>
-            <li>Professional screenshot mockups</li>
-            <li>Multiple device support - desktop, tablet, mobile, laptop</li>
-            <li>Customizable themes and backgrounds</li>
-            <li>High-quality PNG export</li>
-            <li>Fullscreen preview mode</li>
-            <li>Social media sharing</li>
-            <li>No design skills required</li>
-          </ul>
-          <h2>Use Cases</h2>
-          <ul>
-            <li>Portfolio showcase</li>
-            <li>Client presentations</li>
-            <li>Social media posts</li>
-            <li>Design proposals</li>
-            <li>Website mockups</li>
-            <li>App screenshots</li>
-          </ul>
-        </div>
         {/* Hero Section */}
         <HeroSection />
 
@@ -161,10 +132,6 @@ function App() {
                               browserTheme.slice(1)}{" "}
                           • {scale}% scale
                         </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-brand-600">Ready</span>
                       </div>
                     </div>
                   </div>
@@ -306,6 +273,7 @@ function App() {
                           value={scale}
                           className="range range-primary w-full h-2"
                           step="5"
+                          aria-valuetext={`${scale} percent`}
                           onChange={(e) => setScale(Number(e.target.value))}
                         />
                         <div className="flex justify-between text-xs text-brand-500 mt-2">
@@ -462,6 +430,8 @@ function App() {
             </div>
           </div>
         </section>
+
+        <FeaturesSection />
       </main>
 
       {/* Footer */}

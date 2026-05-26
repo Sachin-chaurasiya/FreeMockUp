@@ -8,6 +8,12 @@
   --range-shdw: theme(colors.primary.500);
 }
 
+/* Brand-color the daisyUI primary range slider (track + thumb) */
+.range.range-primary {
+  --range-shdw: theme(colors.primary.500);
+  color: theme(colors.primary.500);
+}
+
 html {
   scroll-behavior: smooth;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
