@@ -77,8 +77,8 @@ export const EditorPage: FC = () => {
           <button
             type="button"
             onClick={reset}
-            title="Reset to defaults"
-            aria-label="Reset to defaults"
+            title="Reset settings (keeps your image)"
+            aria-label="Reset settings"
             className="p-2 rounded-lg text-brand-700 hover:bg-red-50 hover:text-red-600 focus-ring transition-colors"
           >
             <FaTrash className="text-sm" />

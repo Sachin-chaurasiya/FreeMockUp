@@ -43,6 +43,8 @@ export const EditorControls: FC = () => {
     activePresetId,
   } = state;
 
+  const hasChrome = deviceType === "desktop" || deviceType === "laptop";
+
   return (
     <div className="divide-y divide-brand-100">
       <Section title="Quick Templates">
@@ -52,21 +54,23 @@ export const EditorControls: FC = () => {
         />
       </Section>
 
-      <Section title="Device & Theme">
+      <Section title={hasChrome ? "Device & Theme" : "Device"}>
         <div className="space-y-4">
           <DeviceSelector
             selectedDevice={deviceType}
             onDeviceChange={(d) => update({ deviceType: d })}
           />
-          <ThemeSelector
-            selectedTheme={browserTheme}
-            onThemeChange={(t) => update({ browserTheme: t })}
-          />
+          {hasChrome && (
+            <ThemeSelector
+              selectedTheme={browserTheme}
+              onThemeChange={(t) => update({ browserTheme: t })}
+            />
+          )}
         </div>
       </Section>
 
       <Section title="Display">
-        {showInput && (
+        {hasChrome && showInput && (
           <div className="mb-4">
             <label
               htmlFor="website-url"
@@ -86,17 +90,19 @@ export const EditorControls: FC = () => {
         )}
 
         <div className="space-y-2 mb-4">
-          <label className="flex items-center justify-between p-3 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors cursor-pointer">
-            <span className="text-sm font-medium text-brand-700">
-              Show URL Bar
-            </span>
-            <input
-              type="checkbox"
-              className="toggle toggle-primary bg-brand-200 border-brand-200 checked:bg-primary-500 checked:border-primary-500"
-              onChange={(e) => update({ showInput: e.target.checked })}
-              checked={showInput}
-            />
-          </label>
+          {hasChrome && (
+            <label className="flex items-center justify-between p-3 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors cursor-pointer">
+              <span className="text-sm font-medium text-brand-700">
+                Show URL Bar
+              </span>
+              <input
+                type="checkbox"
+                className="toggle toggle-primary bg-brand-200 border-brand-200 checked:bg-primary-500 checked:border-primary-500"
+                onChange={(e) => update({ showInput: e.target.checked })}
+                checked={showInput}
+              />
+            </label>
+          )}
 
           <label className="flex items-center justify-between p-3 bg-brand-50 rounded-lg hover:bg-brand-100 transition-colors cursor-pointer">
             <span className="text-sm font-medium text-brand-700">
