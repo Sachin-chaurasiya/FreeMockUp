@@ -159,14 +159,25 @@ const MockUp: FC<MockUpProps> = ({
     [scale]
   );
 
-  const resolvedTheme = useMemo(() => {
-    if (browserTheme === "auto") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return browserTheme;
+  const [systemDark, setSystemDark] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false
+  );
+
+  useEffect(() => {
+    if (browserTheme !== "auto") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener("change", onChange);
+    setSystemDark(mq.matches);
+    return () => mq.removeEventListener("change", onChange);
   }, [browserTheme]);
+
+  const resolvedTheme = useMemo(() => {
+    if (browserTheme === "auto") return systemDark ? "dark" : "light";
+    return browserTheme;
+  }, [browserTheme, systemDark]);
 
   const renderMockupImage = () => (
     <img

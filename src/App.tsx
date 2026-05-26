@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { FaUndo, FaRedo, FaTrash } from "react-icons/fa";
 import { MockUp, ShadowSize } from "./components/Mockup";
 import BgColors from "./components/BgColors";
 import { DeviceSelector, DeviceType } from "./components/DeviceSelector";
@@ -9,51 +10,124 @@ import { BG_GRADIENT_COLOR_LIST } from "./constants";
 import Header from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
 import { FeaturesSection } from "./components/FeaturesSection";
+import { useUndoableState } from "./hooks/useUndoableState";
 
 const SHADOW_OPTIONS: ShadowSize[] = ["none", "sm", "md", "lg", "xl"];
 const FORMAT_OPTIONS: ExportFormat[] = ["png", "jpeg", "webp"];
 const SCALE_OPTIONS: ExportScale[] = [1, 2, 3];
 
-function App() {
-  const [showInput, setShowInput] = useState(true);
-  const [showBorder, setShowBorder] = useState(true);
-  const [input, setInput] = useState("");
-  const [bgColor, setBgColorState] = useState(BG_GRADIENT_COLOR_LIST[25]);
-  const [scale, setScaleState] = useState(100);
-  const [deviceType, setDeviceTypeState] = useState<DeviceType>("desktop");
-  const [browserTheme, setBrowserTheme] = useState<BrowserTheme>("light");
-  const [padding, setPadding] = useState(48);
-  const [shadow, setShadow] = useState<ShadowSize>("xl");
-  const [cornerRadius, setCornerRadius] = useState(8);
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
-  const [exportScale, setExportScale] = useState<ExportScale>(2);
-  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+interface MockupState {
+  showInput: boolean;
+  showBorder: boolean;
+  input: string;
+  bgColor: string;
+  scale: number;
+  deviceType: DeviceType;
+  browserTheme: BrowserTheme;
+  padding: number;
+  shadow: ShadowSize;
+  cornerRadius: number;
+  exportFormat: ExportFormat;
+  exportScale: ExportScale;
+  activePresetId: string | null;
+}
 
-  // Clear preset selection whenever the user manually edits any frame setting,
-  // so the visually-selected card always reflects the current state.
-  const clearPreset = () => setActivePresetId(null);
-  const setBgColor = (c: string) => {
-    clearPreset();
-    setBgColorState(c);
-  };
-  const setScale = (s: number) => {
-    clearPreset();
-    setScaleState(s);
-  };
-  const setDeviceType = (d: DeviceType) => {
-    clearPreset();
-    setDeviceTypeState(d);
-  };
+const DEFAULT_STATE: MockupState = {
+  showInput: true,
+  showBorder: true,
+  input: "",
+  bgColor: BG_GRADIENT_COLOR_LIST[25],
+  scale: 100,
+  deviceType: "desktop",
+  browserTheme: "light",
+  padding: 48,
+  shadow: "xl",
+  cornerRadius: 8,
+  exportFormat: "png",
+  exportScale: 2,
+  activePresetId: null,
+};
+
+const STORAGE_KEY = "freemockup:state:v1";
+
+function App() {
+  const { state, set, reset, undo, redo, canUndo, canRedo } = useUndoableState(
+    DEFAULT_STATE,
+    STORAGE_KEY
+  );
+
+  const {
+    showInput,
+    showBorder,
+    input,
+    bgColor,
+    scale,
+    deviceType,
+    browserTheme,
+    padding,
+    shadow,
+    cornerRadius,
+    exportFormat,
+    exportScale,
+    activePresetId,
+  } = state;
+
+  // Manual edits to any preset-tracked field clear the visual preset selection.
+  const setWithClearedPreset = (patch: Partial<MockupState>) =>
+    set({ ...patch, activePresetId: null });
+
+  const setShowInput = (v: boolean) => set({ showInput: v });
+  const setShowBorder = (v: boolean) => set({ showBorder: v });
+  const setInput = (v: string) => set({ input: v });
+  const setBgColor = (v: string) => setWithClearedPreset({ bgColor: v });
+  const setScale = (v: number) => setWithClearedPreset({ scale: v });
+  const setDeviceType = (v: DeviceType) =>
+    setWithClearedPreset({ deviceType: v });
+  const setBrowserTheme = (v: BrowserTheme) => set({ browserTheme: v });
+  const setPadding = (v: number) => set({ padding: v });
+  const setShadow = (v: ShadowSize) => set({ shadow: v });
+  const setCornerRadius = (v: number) => set({ cornerRadius: v });
+  const setExportFormat = (v: ExportFormat) => set({ exportFormat: v });
+  const setExportScale = (v: ExportScale) => set({ exportScale: v });
 
   const handlePresetSelect = (preset: PresetTemplate) => {
-    setActivePresetId(preset.id);
-    setDeviceTypeState(preset.deviceType);
-    setScaleState(preset.scale);
-    setShowInput(preset.showInput);
-    setShowBorder(preset.showBorder);
-    setBgColorState(preset.bgColor);
-    setInput(preset.url);
+    set({
+      activePresetId: preset.id,
+      deviceType: preset.deviceType,
+      scale: preset.scale,
+      showInput: preset.showInput,
+      showBorder: preset.showBorder,
+      bgColor: preset.bgColor,
+      input: preset.url,
+    });
   };
+
+  // Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z global shortcuts.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const target = e.target as HTMLElement | null;
+      // Don't hijack undo inside text inputs — let the browser handle text undo.
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [undo, redo]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-secondary-50">
@@ -160,13 +234,46 @@ function App() {
               <div className="order-1 lg:order-2">
                 <div className="bg-white rounded-2xl shadow-xl border border-brand-100 h-fit">
                   {/* Header */}
-                  <div className="p-6 pb-4 border-b border-brand-100">
-                    <h3 className="text-xl font-bold text-brand-900 mb-2">
-                      Customize Your Mockup
-                    </h3>
-                    <p className="text-sm text-brand-600">
-                      Choose from presets or fine-tune every detail
-                    </p>
+                  <div className="p-6 pb-4 border-b border-brand-100 flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-bold text-brand-900 mb-2">
+                        Customize Your Mockup
+                      </h3>
+                      <p className="text-sm text-brand-600">
+                        Choose from presets or fine-tune every detail
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={undo}
+                        disabled={!canUndo}
+                        title="Undo (⌘Z)"
+                        aria-label="Undo"
+                        className="p-2 rounded-lg text-brand-700 bg-brand-50 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed focus-ring transition-colors"
+                      >
+                        <FaUndo className="text-sm" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={redo}
+                        disabled={!canRedo}
+                        title="Redo (⌘⇧Z)"
+                        aria-label="Redo"
+                        className="p-2 rounded-lg text-brand-700 bg-brand-50 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed focus-ring transition-colors"
+                      >
+                        <FaRedo className="text-sm" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={reset}
+                        title="Reset to defaults"
+                        aria-label="Reset to defaults"
+                        className="p-2 rounded-lg text-brand-700 bg-brand-50 hover:bg-red-50 hover:text-red-600 focus-ring transition-colors"
+                      >
+                        <FaTrash className="text-sm" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Content */}
